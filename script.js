@@ -3,7 +3,7 @@
 // @namespace   https://github.com/Nuklon
 // @author      Nuklon
 // @license     MIT
-// @version     6.8.0
+// @version     7.0.0
 // @description Enhances the Steam Inventory and Steam Market.
 // @include     *://steamcommunity.com/id/*/inventory*
 // @include     *://steamcommunity.com/profiles/*/inventory*
@@ -2248,6 +2248,7 @@
       var sellButtons = $(
         '<div id="inventory_sell_buttons" style="margin-bottom:12px;">' +
           '<a class="btn_green_white_innerfade btn_medium_wide sell_all separator-btn-right"><span>Sell All Items</span></a>' +
+          '<a class="btn_green_white_innerfade btn_medium_wide sell_all_of_selected_item separator-btn-right"><span>Sell All of selected item</span></a>' +
           '<a class="btn_green_white_innerfade btn_medium_wide sell_selected separator-btn-right" style="display:none"><span>Sell Selected Items</span></a>' +
           '<a class="btn_green_white_innerfade btn_medium_wide sell_manual separator-btn-right" style="display:none"><span>Sell Manually</span></a>' +
           (showMiscOptions
@@ -2285,6 +2286,29 @@
         $(".sell_all").on("click", "*", function() {
           sellAllItems(appId);
         });
+        $(".sell_all_of_selected_item").on("click", "*", function() {
+          loadAllInventories().then(function() {
+            getInventorySelectedMarketableItems(function(selectedItems) {
+              var firstSelectedItem = selectedItems[0];
+
+              if (!firstSelectedItem) {
+                return;
+              }
+
+              var items = getInventoryItems();
+              var itemsOfSelectedType = items.filter(
+                item =>
+                  firstSelectedItem.market_hash_name === item.market_hash_name
+              );
+
+              sellItems(itemsOfSelectedType);
+            }),
+              function() {
+                logDOM("Could not retrieve the inventory...");
+              };
+          });
+        });
+
         $(".sell_selected").on("click", "*", sellSelectedItems);
         $(".sell_manual").on("click", "*", sellSelectedItemsManually);
         $(".sell_all_cards").on("click", "*", sellAllCards);
